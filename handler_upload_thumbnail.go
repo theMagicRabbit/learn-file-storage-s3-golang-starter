@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -62,11 +63,19 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	extension, ok := extensionMap[mediaType]
-	if !ok {
-		respondWithError(w, http.StatusBadRequest, "Unknown file extension", fmt.Errorf("%s not in extension map", mediaType))
+	contentType, _, err := mime.ParseMediaType(mediaType)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Could not parse content type", err)
 		return
 	}
+	switch contentType {
+	case "image/png":
+	case "image/jpeg":
+	default:
+		respondWithError(w, http.StatusBadRequest, "File type not supported", err)
+		return
+	}
+	extension := strings.TrimPrefix(contentType, "image/")
 
 	thumbnailFileName := fmt.Sprintf("%s.%s", videoID, extension)
 	thumbnailPath := filepath.Join(cfg.assetsRoot, thumbnailFileName)
