@@ -28,6 +28,10 @@ type thumbnail struct {
 	mediaType string
 }
 
+var extensionMap = map[string]string{
+	"image/png": "png",
+}
+
 func main() {
 	godotenv.Load(".env")
 
