@@ -86,11 +86,17 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 	
 	tempVideoFile.Seek(0, io.SeekStart)
 
+	videoAspectRatio, err := getVideoAspectRatio(tempVideoFile.Name())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Unable to get video metadata", err)
+		return
+	}
+
 	videoHexID := make([]byte, 32)
 	rand.Read(videoHexID)
 	title := base64.RawURLEncoding.EncodeToString(videoHexID)
 	extension := strings.TrimPrefix(mediaType, "video/")
-	videoS3Key := fmt.Sprintf("%s.%s", title, extension)
+	videoS3Key := fmt.Sprintf("%s/%s.%s", videoAspectRatio, title, extension)
 	
 	params := s3.PutObjectInput {
 		Bucket: &cfg.s3Bucket,
