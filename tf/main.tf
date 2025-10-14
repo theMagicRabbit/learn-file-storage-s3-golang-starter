@@ -17,6 +17,21 @@ resource "aws_s3_bucket_public_access_block" "allow_all_access" {
   restrict_public_buckets = false
 }
 
+resource "aws_s3_bucket" "private_bucket" {
+  bucket              = "tubely-private-22918"
+  force_destroy       = true
+  object_lock_enabled = false
+}
+
+resource "aws_s3_bucket_public_access_block" "block_all_access" {
+  bucket = aws_s3_bucket.private_bucket.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
 resource "aws_iam_group" "managers_group" {
   name = "managers"
 }
