@@ -53,7 +53,7 @@ resource "aws_iam_policy" "managers_from_home_policy" {
         Resource = "*"
         Condition = {
           IpAddress = {
-            "aws:SourceIp" = "0.0.0.0/32"
+            "aws:SourceIp" = "99.137.90.132/32"
           }
         }
       }
