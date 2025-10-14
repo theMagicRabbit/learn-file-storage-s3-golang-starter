@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/auth"
@@ -123,12 +124,33 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	videoAWSURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", cfg.s3Bucket, cfg.s3Region, videoS3Key)
+	videoAWSURL := fmt.Sprintf("%s,%s", cfg.s3Bucket, videoS3Key)
+	
 	videoMetaData.VideoURL = &videoAWSURL
 	err = cfg.db.UpdateVideo(videoMetaData)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Unable to update database", err)
 		return
 	}
+
+	videoMetaData, err = cfg.dbVideoToSignedVideo(videoMetaData) 
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Unable to get signed address", err)
+		return
+	}
 	respondWithJSON(w, http.StatusNoContent, "")
 }
+
+func generatePresignedURL(s3Client *s3.Client, bucket, key string, expireTime time.Duration) (string, error) {
+	presignedClient := s3.NewPresignClient(s3Client)
+	params := s3.GetObjectInput{
+		Bucket: &bucket,
+		Key: &key,
+	}
+	presignReq, err := presignedClient.PresignGetObject(context.Background(), &params, s3.WithPresignExpires(expireTime))
+	if err != nil {
+		return "", err
+	}
+	return presignReq.URL, nil
+}
+
