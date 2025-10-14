@@ -62,24 +62,24 @@ resource "aws_iam_policy" "managers_from_home_policy" {
 }
 
 resource "aws_iam_policy" "tubely_s3_access_policy" {
-  name = "tubely-s3"
-  path = "/"
+  name        = "tubely-s3"
+  path        = "/"
   description = "Access for tubely app"
 
   policy = jsonencode({
-   Version =  "2012-10-17",
-   Statement = [
-     {
-       Sid = "VisualEditor0",
-       Effect = "Allow",
-       Action = [
-         "s3:PutObject",
-         "s3:GetObject",
-         "s3:DeleteObject",
-         "s3:ListBucket"
-       ],
-       Resource = [aws_s3_bucket.learning_bucket.arn, "${aws_s3_bucket.learning_bucket.arn}/*"]
-     }
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "VisualEditor0",
+        Effect = "Allow",
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ],
+        Resource = [aws_s3_bucket.learning_bucket.arn, "${aws_s3_bucket.learning_bucket.arn}/*"]
+      }
     ]
   })
 }
@@ -95,5 +95,27 @@ resource "aws_iam_group_membership" "managers_members" {
   users = ["tofu", "brt"]
 
   group = aws_iam_group.managers_group.name
+}
+
+resource "aws_iam_role" "tubely_app_s3_role" {
+  name = "tubely-app"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow",
+
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        },
+      },
+    ],
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "tubely_app_s3_role_attachement" {
+  role       = aws_iam_role.tubely_app_s3_role.name
+  policy_arn = aws_iam_policy.tubely_s3_access_policy.arn
 }
 
