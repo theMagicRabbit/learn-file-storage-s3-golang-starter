@@ -61,6 +61,29 @@ resource "aws_iam_policy" "managers_from_home_policy" {
   })
 }
 
+resource "aws_iam_policy" "tubely_s3_access_policy" {
+  name = "tubely-s3"
+  path = "/"
+  description = "Access for tubely app"
+
+  policy = jsonencode({
+   Version =  "2012-10-17",
+   Statement = [
+     {
+       Sid = "VisualEditor0",
+       Effect = "Allow",
+       Action = [
+         "s3:PutObject",
+         "s3:GetObject",
+         "s3:DeleteObject",
+         "s3:ListBucket"
+       ],
+       Resource = [aws_s3_bucket.learning_bucket.arn, "${aws_s3_bucket.learning_bucket.arn}/*"]
+     }
+    ]
+  })
+}
+
 resource "aws_iam_group_policy_attachment" "attach_manager_from_home_to_manager" {
   group      = aws_iam_group.managers_group.name
   policy_arn = aws_iam_policy.managers_from_home_policy.arn
