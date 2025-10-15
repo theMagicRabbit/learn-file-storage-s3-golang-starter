@@ -116,7 +116,5 @@ func (cfg *apiConfig) handlerVideosRetrieve(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	newVideos := make([]database.Video, len(videos))
-
-	respondWithJSON(w, http.StatusOK, newVideos)
+	respondWithJSON(w, http.StatusOK, videos)
 }
