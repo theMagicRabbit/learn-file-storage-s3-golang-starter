@@ -8,6 +8,13 @@ resource "aws_s3_bucket" "learning_bucket" {
   object_lock_enabled = false
 }
 
+resource "aws_s3_bucket_versioning" "learning_bucket_versioning" {
+  bucket = aws_s3_bucket.learning_bucket.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
 resource "aws_s3_bucket_public_access_block" "allow_all_access" {
   bucket = aws_s3_bucket.learning_bucket.id
 
